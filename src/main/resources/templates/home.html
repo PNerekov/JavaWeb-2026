@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Webshop Home</title>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-5">
+
+    <div class="p-5 mb-4 bg-light rounded-3">
+        <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">Welcome to our Webshop</h1>
+
+            <p class="col-md-8 fs-4">
+                Browse our categories, view products, add items to your cart,
+                and complete your purchase using cash on delivery or PayPal.
+            </p>
+
+            <a class="btn btn-primary btn-lg" th:href="@{/products}">
+                Browse products
+            </a>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <div class="col-12 col-md-4 mb-3">
+            <h2 class="h4">Browse Products</h2>
+            <p>Explore products by category and find what you need.</p>
+        </div>
+
+        <div class="col-12 col-md-4 mb-3">
+            <h2 class="h4">Shopping Cart</h2>
+            <p>Add products to your cart and change quantities before checkout.</p>
+        </div>
+
+        <div class="col-12 col-md-4 mb-3">
+            <h2 class="h4">Order History</h2>
+            <p>Logged-in users can view their previous purchases.</p>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

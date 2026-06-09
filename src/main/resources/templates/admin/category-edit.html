@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Category</title>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-4">
+
+    <div class="mb-4">
+        <h1 class="mb-1">Edit Category</h1>
+        <p class="text-muted mb-0">Update category information.</p>
+    </div>
+
+    <div class="alert alert-danger"
+         th:if="${errorMessage}"
+         th:text="${errorMessage}">
+        Error message
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form th:action="@{/admin/categories/edit}"
+                  th:object="${categoryDTO}"
+                  method="post">
+
+                <input type="hidden"
+                       name="oldCategoryName"
+                       th:value="${oldCategoryName}">
+
+                <div class="mb-3">
+                    <label for="name" class="form-label">Category name</label>
+                    <input type="text"
+                           id="name"
+                           th:field="*{name}"
+                           class="form-control">
+
+                    <div class="text-danger small"
+                         th:if="${#fields.hasErrors('name')}"
+                         th:errors="*{name}">
+                        Name error
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        Save changes
+                    </button>
+
+                    <a class="btn btn-outline-secondary"
+                       th:href="@{/admin/categories}">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

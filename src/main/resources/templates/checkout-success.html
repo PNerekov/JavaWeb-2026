@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Confirmed</title>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-5">
+
+    <div class="alert alert-success shadow-sm">
+        <h1 class="h3">Order confirmed</h1>
+        <p class="mb-0">Thank you. Your order has been created successfully.</p>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <p>
+                <strong>Order ID:</strong>
+                <span th:text="${order.id}">1</span>
+            </p>
+
+            <p>
+                <strong>Date:</strong>
+                <span th:text="${order.orderDate}">date</span>
+            </p>
+
+            <p>
+                <strong>Payment method:</strong>
+                <span th:text="${order.paymentMethod}">payment</span>
+            </p>
+
+            <p>
+                <strong>Total:</strong>
+                €<span th:text="${order.totalPrice}">0.00</span>
+            </p>
+
+            <a class="btn btn-primary" th:href="@{/products}">
+                Continue shopping
+            </a>
+
+            <a class="btn btn-outline-primary" th:href="@{/orders}">
+                View my orders
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

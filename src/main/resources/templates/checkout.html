@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Checkout</title>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-4">
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}">
+        Error message
+    </div>
+
+    <div class="mb-4">
+        <h1 class="mb-1">Checkout</h1>
+        <p class="text-muted mb-0">Review your order and choose how you want to pay.</p>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    Order summary
+                </div>
+
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead>
+                            <tr>
+                                <th scope="col">Product</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Quantity</th>
+                                <th scope="col">Subtotal</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="item : ${cartItems}">
+                                <td>
+                                    <strong th:text="${item.productName}">Product</strong>
+                                </td>
+
+                                <td>
+                                    €<span th:text="${item.productPrice}">0.00</span>
+                                </td>
+
+                                <td th:text="${item.quantity}">1</td>
+
+                                <td>
+                                    €<span th:text="${item.subtotal}">0.00</span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h2 class="h4 text-end">
+                        Total: €<span th:text="${cartTotal}">0.00</span>
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    Payment
+                </div>
+
+                <div class="card-body">
+
+                    <p class="text-muted">
+                        Choose one of the available payment methods.
+                    </p>
+
+                    <form th:action="@{/checkout}"
+                          th:object="${checkoutDTO}"
+                          method="post"
+                          class="mb-3">
+
+                        <input type="hidden"
+                               th:field="*{paymentMethod}"
+                               th:value="${T(hr.algebra.javaweb.javaweb2026.model.PaymentMethod).CASH_ON_DELIVERY}">
+
+                        <button type="submit" class="btn btn-success w-100">
+                            Pay cash on delivery
+                        </button>
+                    </form>
+
+                    <div class="text-center text-muted mb-2">
+                        or
+                    </div>
+
+                    <div id="paypal-button-container"></div>
+
+                    <a class="btn btn-outline-secondary w-100 mt-3" th:href="@{/cart}">
+                        Back to cart
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+
+<script th:inline="javascript">
+    const paypalClientId = /*[[${paypalClientId}]]*/ "";
+    const paypalCurrency = "EUR";
+
+    function showPayPalError(message) {
+        const paypalContainer = document.getElementById("paypal-button-container");
+
+        if (paypalContainer) {
+            paypalContainer.innerHTML = "<div class='alert alert-danger'>" + message + "</div>";
+        }
+    }
+
+    function renderPayPalButtons() {
+        paypal.Buttons({
+            createOrder: function () {
+                return fetch("/paypal/create-order", {
+                    method: "post"
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error("Could not create PayPal order.");
+                        }
+
+                        return response.json();
+                    })
+                    .then(function (order) {
+                        return order.id;
+                    });
+            },
+
+            onApprove: function (data) {
+                const formData = new FormData();
+                formData.append("paypalOrderId", data.orderID);
+
+                return fetch("/paypal/capture-order", {
+                    method: "post",
+                    body: formData
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error("Could not capture PayPal order.");
+                        }
+
+                        return response.json();
+                    })
+                    .then(function () {
+                        window.location.href = "/orders";
+                    });
+            },
+
+            onError: function () {
+                showPayPalError("PayPal payment failed. Please try again.");
+            }
+        }).render("#paypal-button-container");
+    }
+
+    (function loadPayPalSdk() {
+        if (!paypalClientId) {
+            showPayPalError("PayPal client ID is missing.");
+            return;
+        }
+
+        const script = document.createElement("script");
+
+        script.src = "https://www.paypal.com/sdk/js?client-id="
+            + encodeURIComponent(paypalClientId)
+            + "&currency=" + encodeURIComponent(paypalCurrency)
+            + "&intent=capture"
+            + "&components=buttons";
+
+        script.onload = renderPayPalButtons;
+
+        script.onerror = function () {
+            showPayPalError("Failed to load PayPal SDK.");
+        };
+
+        document.body.appendChild(script);
+    })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Products</title>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+
+    <style>
+        .admin-product-list {
+            max-height: 580px;
+            overflow-y: auto;
+        }
+
+        .admin-product-list thead th {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-4">
+
+    <div class="mb-4">
+        <h1 class="mb-1">Admin Products</h1>
+        <p class="text-muted mb-0">Create and manage webshop products.</p>
+    </div>
+
+    <div id="message-container"></div>
+
+    <div class="alert alert-success"
+         th:if="${successMessage}"
+         th:text="${successMessage}">
+        Success message
+    </div>
+
+    <div class="alert alert-danger"
+         th:if="${errorMessage}"
+         th:text="${errorMessage}">
+        Error message
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    Create new product
+                </div>
+
+                <div class="card-body">
+                    <form id="create-product-form">
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Product name</label>
+                            <input type="text" id="name" name="name" class="form-control">
+                            <div class="text-danger small" id="name-error"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Category</label>
+                            <select id="categoryName" name="categoryName" class="form-select">
+                                <option value="">Choose category</option>
+                                <option th:each="category : ${categories}"
+                                        th:value="${category.name}"
+                                        th:text="${category.name}">
+                                    Category
+                                </option>
+                            </select>
+                            <div class="text-danger small" id="categoryName-error"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" class="form-control"></textarea>
+                            <div class="text-danger small" id="description-error"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="number" step="0.01" id="price" name="price" class="form-control">
+                            <div class="text-danger small" id="price-error"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="stockQuantity" class="form-label">Stock quantity</label>
+                            <input type="number" id="stockQuantity" name="stockQuantity" class="form-control">
+                            <div class="text-danger small" id="stockQuantity-error"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="imageUrl" class="form-label">Image URL</label>
+                            <input type="text" id="imageUrl" name="imageUrl" class="form-control">
+                            <div class="text-danger small" id="imageUrl-error"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            Create product
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-7 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    Product list
+                </div>
+
+                <div class="card-body">
+                    <div class="table-responsive admin-product-list">
+                        <table class="table align-middle">
+                            <thead>
+                            <tr>
+                                <th scope="col">Image</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Price</th>
+                                <th scope="col">Stock</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                            </thead>
+
+                            <tbody id="product-table-body">
+                            <tr th:each="product : ${products}">
+                                <td>
+                                    <img th:src="${product.imageUrl}"
+                                         th:alt="${product.name}"
+                                         class="rounded"
+                                         style="width: 60px; height: 60px; object-fit: cover;">
+                                </td>
+
+                                <td th:text="${product.name}">Product</td>
+                                <td th:text="${product.categoryName}">Category</td>
+
+                                <td>
+                                    €<span th:text="${product.price}">0.00</span>
+                                </td>
+
+                                <td th:text="${product.stockQuantity}">0</td>
+
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a class="btn btn-outline-primary btn-sm"
+                                           th:href="@{/admin/products/edit(productName=${product.name})}">
+                                            Edit
+                                        </a>
+
+                                        <form th:action="@{/admin/products/delete}" method="post">
+                                            <input type="hidden" name="productName" th:value="${product.name}">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="alert alert-info" th:if="${products.isEmpty()}">
+                        No products found.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+
+<script>
+    const form = document.getElementById("create-product-form");
+    const messageContainer = document.getElementById("message-container");
+    const productTableBody = document.getElementById("product-table-body");
+
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        clearMessages();
+        clearErrors();
+
+        const product = {
+            name: document.getElementById("name").value,
+            categoryName: document.getElementById("categoryName").value,
+            description: document.getElementById("description").value,
+            price: document.getElementById("price").value,
+            stockQuantity: document.getElementById("stockQuantity").value,
+            imageUrl: document.getElementById("imageUrl").value
+        };
+
+        fetch("/admin/products/create-async", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(product)
+        })
+            .then(function (response) {
+                return response.json().then(function (data) {
+                    return {
+                        ok: response.ok,
+                        data: data
+                    };
+                });
+            })
+            .then(function (result) {
+                if (!result.ok) {
+                    showValidationErrors(result.data.errors);
+                    return;
+                }
+
+                addProductToTable(result.data.product);
+                form.reset();
+                showSuccessMessage(result.data.message);
+            })
+            .catch(function () {
+                showErrorMessage("Could not create product. Please try again.");
+            });
+    });
+
+    function addProductToTable(product) {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>
+                <img src="${escapeHtml(product.imageUrl || '')}"
+                     alt="${escapeHtml(product.name)}"
+                     class="rounded"
+                     style="width: 60px; height: 60px; object-fit: cover;">
+            </td>
+            <td>${escapeHtml(product.name)}</td>
+            <td>${escapeHtml(product.categoryName)}</td>
+            <td>€${escapeHtml(product.price)}</td>
+            <td>${escapeHtml(product.stockQuantity)}</td>
+            <td class="text-end">
+                <div class="d-flex justify-content-end gap-2">
+                    <a class="btn btn-outline-primary btn-sm"
+                        href="/admin/products/edit?productName=${encodeURIComponent(product.name)}">
+                        Edit
+                    </a>
+
+                    <form action="/admin/products/delete" method="post">
+                        <input type="hidden" name="productName" value="${escapeHtml(product.name)}">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                            Delete
+                            </button>
+                    </form>
+                 </div>
+            </td>
+        `;
+
+        productTableBody.prepend(row);
+    }
+
+    function showValidationErrors(errors) {
+        if (!errors) {
+            showErrorMessage("Please check the form.");
+            return;
+        }
+
+        Object.keys(errors).forEach(function (fieldName) {
+            const errorElement = document.getElementById(fieldName + "-error");
+
+            if (errorElement) {
+                errorElement.textContent = errors[fieldName];
+            }
+        });
+
+        showErrorMessage("Product could not be created. Please fix the errors.");
+    }
+
+    function clearErrors() {
+        document.querySelectorAll(".text-danger.small").forEach(function (element) {
+            element.textContent = "";
+        });
+    }
+
+    function showSuccessMessage(message) {
+        messageContainer.innerHTML =
+            `<div class="alert alert-success">${escapeHtml(message)}</div>`;
+    }
+
+    function showErrorMessage(message) {
+        messageContainer.innerHTML =
+            `<div class="alert alert-danger">${escapeHtml(message)}</div>`;
+    }
+
+    function clearMessages() {
+        messageContainer.innerHTML = "";
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+</script>
+
+</body>
+</html>

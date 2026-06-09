@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Shopping Cart</title>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-4">
+
+    <div class="alert alert-danger" th:if="${errorMessage}" th:text="${errorMessage}">
+        Error message
+    </div>
+
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}">
+        Success message
+    </div>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <h1 class="mb-1">Shopping Cart</h1>
+            <p class="text-muted mb-0">Review and update your selected products.</p>
+        </div>
+
+        <a class="btn btn-outline-primary mt-3 mt-md-0" th:href="@{/products}">
+            Continue shopping
+        </a>
+    </div>
+
+    <div th:if="${cartItems.isEmpty()}" class="alert alert-info">
+        Your cart is empty.
+    </div>
+
+    <div th:if="${!cartItems.isEmpty()}">
+
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                <tr>
+                    <th scope="col">Product</th>
+                    <th scope="col">Price</th>
+                    <th scope="col">Quantity</th>
+                    <th scope="col">Subtotal</th>
+                    <th scope="col" class="text-end">Actions</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="item : ${cartItems}">
+                    <td>
+                        <div class="d-flex align-items-center gap-3">
+                            <img th:src="${item.imageUrl}"
+                                 th:alt="${item.productName}"
+                                 class="rounded"
+                                 style="width: 80px; height: 80px; object-fit: cover;">
+
+                            <strong th:text="${item.productName}">Product name</strong>
+                        </div>
+                    </td>
+
+                    <td>
+                        €<span th:text="${item.productPrice}">0.00</span>
+                    </td>
+
+                    <td>
+                        <form th:action="@{/cart/update}" method="post" class="d-flex gap-2">
+                            <input type="hidden" name="productName" th:value="${item.productName}">
+
+                            <input type="number"
+                                   name="quantity"
+                                   th:value="${item.quantity}"
+                                   min="1"
+                                   class="form-control"
+                                   style="max-width: 100px;"
+                                   aria-label="Quantity">
+
+                            <button type="submit" class="btn btn-outline-primary">
+                                Update
+                            </button>
+                        </form>
+                    </td>
+
+                    <td>
+                        €<span th:text="${item.subtotal}">0.00</span>
+                    </td>
+
+                    <td class="text-end">
+                        <form th:action="@{/cart/remove}" method="post">
+                            <input type="hidden" name="productName" th:value="${item.productName}">
+                            <button type="submit" class="btn btn-outline-danger">
+                                Remove
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mt-4">
+            <form th:action="@{/cart/clear}" method="post">
+                <button type="submit" class="btn btn-outline-danger">
+                    Clear cart
+                </button>
+            </form>
+
+            <div class="text-md-end mt-4 mt-md-0">
+                <h2 class="h3">
+                    Total: €<span th:text="${cartTotal}">0.00</span>
+                </h2>
+
+                <a class="btn btn-success btn-lg mt-2" th:href="@{/checkout}">
+                    Proceed to checkout
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

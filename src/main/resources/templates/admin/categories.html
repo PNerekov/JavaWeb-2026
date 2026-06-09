@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Categories</title>
+
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container mt-4">
+
+    <div class="mb-4">
+        <h1 class="mb-1">Admin Categories</h1>
+        <p class="text-muted mb-0">Create, edit and delete product categories.</p>
+    </div>
+
+    <div class="alert alert-success"
+         th:if="${successMessage}"
+         th:text="${successMessage}">
+        Success message
+    </div>
+
+    <div class="alert alert-danger"
+         th:if="${errorMessage}"
+         th:text="${errorMessage}">
+        Error message
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    Create category
+                </div>
+
+                <div class="card-body">
+                    <form th:action="@{/admin/categories/create}"
+                          th:object="${categoryDTO}"
+                          method="post">
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Category name</label>
+                            <input type="text"
+                                   id="name"
+                                   th:field="*{name}"
+                                   class="form-control">
+
+                            <div class="text-danger small"
+                                 th:if="${#fields.hasErrors('name')}"
+                                 th:errors="*{name}">
+                                Name error
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            Create category
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    Existing categories
+                </div>
+
+                <div class="card-body">
+                    <div class="alert alert-info"
+                         th:if="${#lists.isEmpty(categories)}">
+                        No categories available.
+                    </div>
+
+                    <div class="table-responsive"
+                         th:if="${!#lists.isEmpty(categories)}">
+                        <table class="table align-middle">
+                            <thead>
+                            <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col" class="text-end">Actions</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="category : ${categories}">
+                                <td th:text="${category.name}">Category</td>
+
+                                <td class="text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a class="btn btn-outline-primary btn-sm"
+                                           th:href="@{/admin/categories/edit(categoryName=${category.name})}">
+                                            Edit
+                                        </a>
+
+                                        <form th:action="@{/admin/categories/delete}"
+                                              method="post">
+                                            <input type="hidden"
+                                                   name="categoryName"
+                                                   th:value="${category.name}">
+
+                                            <button type="submit"
+                                                    class="btn btn-outline-danger btn-sm">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
